@@ -18,7 +18,7 @@ rm(list = ls())
 
 # Set working directory ####
 w.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
-w.dir <- "H:/Github/GB_2015_Survey"
+#w.dir <- "H:/Github/GB_2015_Survey"
 # Set data directory - to read the data from
 d.dir <- paste(w.dir, "data", sep='/')
 # Set graph directory - to save plots

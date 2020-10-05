@@ -309,7 +309,7 @@ str(all)
 # save ----
 #write.csv(all, paste(d.dir, "mean.class.cover.allmethods.csv", sep='/'))
 
-## To start plotting LOAD ALL DATA HERE ---
+## To start plotting LOAD ALL DATA HERE ----
 all <- read.csv(paste(d.dir, "mean.class.cover.allmethods.csv", sep ='/'))
 
 # reorder factors for plotting ----

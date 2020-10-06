@@ -40,6 +40,8 @@ p.dir <- paste(w.dir, "plots", sep='/')
 ## Read GB shapefile ----
 gb <- readOGR(paste(s.dir, "GeoBay.shp", sep='/'))
 
+
+### STREO-BRUVS ####
 # ## read BRUV data ----
 bruv <- read.csv(paste(d.dir, "stereo-BRUVs_detailed.percent.cover_20200914.csv", sep='/'))
 str(bruv)
@@ -128,7 +130,7 @@ bsg2$ZoneName <- ordered(bsg2$ZoneName, levels=c("NPZ", "HPZ", "MUZ", "SPZ"))
 # Bruv colors ----
 bluepal <- choose_palette()
 greenpal <- choose_palette()
-zonecolors <- c("#eceabe", "#80daeb", "#93dfb8" , "#dbd7d2")
+zonecolors <- c("#93dfb8" , "#eceabe", "#80daeb", "#dbd7d2")
 
 
 theme_set(theme_bw())
@@ -153,3 +155,395 @@ pb <-ggplot(data=bsg2, aes(x=ZoneName, y=Mean, fill=ZoneName)) +
 pb
 
 ggsave("Seagrass.BRUVs.png", plot = pb, path = p.dir, scale=1, dpi = 300)
+
+
+
+## FTV ####
+# ## read BRUV data ----
+ftv <- read.csv(paste(d.dir, "towed_detailed.percent.cover_20200914.csv", sep='/'))
+str(ftv)
+head(ftv)
+# create id column
+id <- seq(1:2962)
+ftv$id <- id
+head(ftv)
+# make sp --
+tsp <- ftv
+coordinates(tsp) <- ~longitude+latitude
+proj4string(tsp) <- proj4string(gb)
+plot(gb)
+points(tsp)
+tsp <- crop(tsp, gb)
+tsp2 <- raster::extract(gb, tsp, df=TRUE)
+
+# make df--
+tsp <- as.data.frame(tsp)
+tsp2 <- as.data.frame(tsp2)
+tsp <- droplevels(tsp)
+tsp2 <- droplevels(tsp2)
+str(tsp) # 1141
+str(tsp2) # 1142 
+# remove duplicated row
+tsp2$point.ID[duplicated(tsp2$point.ID)]
+tsp2 <- tsp2[-1034,]
+# join with rest
+ftv <- cbind(tsp, tsp2)
+str(ftv)
+names(ftv)
+# remove unnecessary columns --
+ftv <- ftv[,c(1:10, 22)]
+head(ftv)
+ftv$unk.strap.like <- ftv$Strap.like.leaves-(ftv$Amphibolis+ftv$Posidonia+ftv$Thalassodendrum)
+head(ftv)
+levels(ftv$ZoneName)[levels(ftv$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "Special Purpose Zone"
+head(ftv)
+
+
+# get averages ----
+# se function --
+se <- function(x) sd(x)/sqrt(length(x))
+# amphibolis --
+amp <- aggregate(Amphibolis~ZoneName, data = ftv, mean)
+ampse <- aggregate(Amphibolis~ZoneName, data = ftv, se)
+# posidonia --
+pos <- aggregate(Posidonia~ZoneName, data = ftv, mean)
+pose <- aggregate(Posidonia~ZoneName, data = ftv, se)
+# Zostera --
+th <- aggregate(Thalassodendrum~ZoneName, data = ftv, mean)
+thse <- aggregate(Thalassodendrum~ZoneName, data = ftv, se)
+# unknown strap --
+unk <- aggregate(unk.strap.like~ZoneName, data = ftv, mean)
+unkse <- aggregate(unk.strap.like~ZoneName, data = ftv, se)
+
+# join -- 
+tsg <- cbind(amp, pos, th,  unk)
+head(tsg )
+names(tsg )
+tsg  <- tsg [,c(1,2,4,6,8)]
+head(tsg )
+
+tsg1 <- cbind(ampse, pose, thse,  unkse)
+head(tsg1)
+names(tsg1)
+tsg1 <- tsg1[,c(1,2,4,6,8)]
+head(tsg1)
+names(tsg1) <- c("ZoneName",  "AmphibolisSE","PosidoniaSE",  "ThalassoSE" ,    "unk.strap.like.SE")
+
+# make long ---
+tsg <- melt(tsg, od.vars=c("ZoneName"))
+head(tsg)
+names(tsg) <- c("ZoneName", "Seagrass", "Mean")
+
+tsg1 <- melt(tsg1, od.vars=c("ZoneName"))
+head(tsg1)
+names(tsg1) <- c("ZoneName", "Seagrass", "SE")
+
+tsg2 <- cbind(tsg, tsg1)
+head(tsg2)
+tsg2 <- tsg2[,c(1,2,3,6)]
+head(tsg2)
+str(tsg2)
+# rename factors ----
+levels(tsg2$Seagrass)[levels(tsg2$Seagrass)=="unk.strap.like"] <- "Unidentified strap-like"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="National Park Zone"] <- "NPZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Habitat Protection Zone"] <- "HPZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Multiple Use Zone"] <- "MUZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Special Purpose Zone"] <- "SPZ"
+
+# reorder factors for plotting ----
+tsg2$ZoneName <- ordered(tsg2$ZoneName, levels=c("NPZ", "HPZ", "MUZ", "SPZ"))
+
+# plot FTV seagrass ----
+
+# FTV colors ----
+bluepal <- choose_palette()
+greenpal <- choose_palette()
+zonecolors <- c("#93dfb8" , "#eceabe", "#80daeb", "#dbd7d2")
+
+
+theme_set(theme_bw())
+pf <-ggplot(data=bsg2, aes(x=ZoneName, y=Mean, fill=ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = Mean-SE, ymax = Mean+SE), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_wrap(~Seagrass, ncol = 2, scales = 'free') +
+  #scale_fill_manual(values = c("#77dde7", "#fc6c85","#b2ec5d", "#ffcf48")) +
+  #scale_fill_manual(values = greenpal(4)) +
+  scale_fill_manual(values = zonecolors) +
+  labs(title = "FTV", y = "Mean % cover") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_text(size = 14, face="bold"), 
+        axis.text.y = element_text(size = 14), 
+        axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 14, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 14, color = "black", face ="bold"))
+
+pf
+
+ggsave("Seagrass.FTV.png", plot = pf, path = p.dir, scale=1, dpi = 300)
+
+
+
+### AUV ####
+# ## read AUV data ----
+auv <- read.csv(paste(d.dir, "auv_detailed.percent.cover_20200914.csv", sep='/'))
+str(auv)
+head(auv)
+# create id column
+#id <- seq(1:2962)
+#ftv$id <- id
+#head(ftv)
+# make sp --
+asp <- auv
+coordinates(asp) <- ~longitude+latitude
+proj4string(asp) <- proj4string(gb)
+plot(gb)
+points(asp)
+#asp <- crop(asp, gb)
+asp2 <- raster::extract(gb, asp, df=TRUE)
+str(asp2)
+# make df--
+asp <- as.data.frame(asp)
+#tsp2 <- as.data.frame(tsp2)
+#tsp <- droplevels(tsp)
+#tsp2 <- droplevels(tsp2)
+#str(tsp) # 1141
+#str(tsp2) # 1142 
+# remove duplicated row
+#asp2$point.ID[duplicated(asp2$point.ID)]
+#asp2 <- asp2[-1034,]
+# join with rest
+auv <- cbind(asp, asp2)
+str(auv)
+names(auv)
+# remove unnecessary columns --
+auv <- auv[,c(1:12, 26)]
+head(auv)
+auv$unk.strap.like <- auv$Strap.like.leaves-(auv$Amphibolis+auv$Posidonia+auv$Zostera+auv$Rupia)
+head(auv)
+levels(auv$ZoneName)[levels(auv$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "Special Purpose Zone"
+head(auv)
+
+
+# get averages ----
+# se function --
+se <- function(x) sd(x)/sqrt(length(x))
+# amphibolis --
+amp <- aggregate(Amphibolis~ZoneName, data = auv, mean)
+ampse <- aggregate(Amphibolis~ZoneName, data = auv, se)
+# posidonia --
+pos <- aggregate(Posidonia~ZoneName, data = auv, mean)
+pose <- aggregate(Posidonia~ZoneName, data = auv, se)
+# Zostera --
+zo <- aggregate(Zostera~ZoneName, data = auv, mean)
+zose <- aggregate(Zostera~ZoneName, data = auv, se)
+# Rupia --
+r <- aggregate(Rupia~ZoneName, data = auv, mean)
+rse <- aggregate(Rupia~ZoneName, data = auv, se)
+# unknown strap --
+unk <- aggregate(unk.strap.like~ZoneName, data = auv, mean)
+unkse <- aggregate(unk.strap.like~ZoneName, data = auv, se)
+
+# join -- 
+asg <- cbind(amp, pos, zo, r, unk)
+head(asg)
+names(asg)
+asg  <- asg [,c(1,2,4,6,8,10)]
+head(asg )
+
+asg1 <- cbind(ampse, pose, zose, rse,  unkse)
+head(asg1)
+names(asg1)
+asg1<- asg1[,c(1,2,4,6,8, 10)]
+head(asg1)
+names(asg1) <- c("ZoneName",  "AmphibolisSE","PosidoniaSE",  "ZosteraSE" ,  "RupiaSE",  "unk.strap.like.SE")
+
+# make long ---
+asg <- melt(asg, od.vars=c("ZoneName"))
+head(asg)
+names(asg) <- c("ZoneName", "Seagrass", "Mean")
+
+asg1 <- melt(asg1, od.vars=c("ZoneName"))
+head(asg1)
+names(asg1) <- c("ZoneName", "Seagrass", "SE")
+
+asg2 <- cbind(asg, asg1)
+head(asg2)
+str(asg2)
+asg2 <- asg2[,c(1,2,3,6)]
+levels(asg2$Seagrass)
+head(asg2)
+str(asg2)
+# rename factors ----
+levels(asg2$Seagrass)[levels(asg2$Seagrass)=="unk.strap.like"] <- "Unidentified strap-like"
+levels(asg2$ZoneName)[levels(asg2$ZoneName)=="National Park Zone"] <- "NPZ"
+levels(asg2$ZoneName)[levels(asg2$ZoneName)=="Habitat Protection Zone"] <- "HPZ"
+levels(asg2$ZoneName)[levels(asg2$ZoneName)=="Multiple Use Zone"] <- "MUZ"
+levels(asg2$ZoneName)[levels(asg2$ZoneName)=="Special Purpose Zone"] <- "SPZ"
+
+levels(asg2$Seagrass)
+# reorder factors for plotting ----
+asg2$ZoneName <- ordered(asg2$ZoneName, levels=c("NPZ", "HPZ", "MUZ", "SPZ"))
+
+
+# plot FTV seagrass ----
+
+# AuV colors ----
+bluepal <- choose_palette()
+greenpal <- choose_palette()
+zonecolors <- c("#93dfb8" , "#eceabe", "#80daeb", "#dbd7d2")
+
+
+theme_set(theme_bw())
+pa <-ggplot(data=bsg2, aes(x=ZoneName, y=Mean, fill=ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = Mean-SE, ymax = Mean+SE), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_wrap(~Seagrass, ncol = 2, scales = 'free') +
+  #scale_fill_manual(values = c("#77dde7", "#fc6c85","#b2ec5d", "#ffcf48")) +
+  #scale_fill_manual(values = greenpal(4)) +
+  scale_fill_manual(values = zonecolors) +
+  labs(title = "AUV", y = "Mean % cover") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_text(size = 14, face="bold"), 
+        axis.text.y = element_text(size = 14), 
+        axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 14, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 14, color = "black", face ="bold"))
+
+pa
+
+ggsave("Seagrass.AUV.png", plot = pa, path = p.dir, scale=1, dpi = 300)
+
+
+## DTV ####
+# ## read BRUV data ----
+dtv <- read.csv(paste(d.dir, "DTV_GeoBay_May2020_percent.cover.n.metadata.csv", sep='/'))
+str(dtv)
+dtv$Latitude <- dtv$Latitude*(-1)
+head(dtv)
+# create id column
+#id <- seq(1:2962)
+#dtv$id <- id
+#head(dtv)
+# make sp --
+dsp <- dtv
+coordinates(dsp) <- ~Longitude+Latitude
+proj4string(dsp) <- proj4string(gb)
+plot(gb)
+points(dsp)
+dsp <- crop(dsp, gb)
+dsp2 <- raster::extract(gb, dsp, df=TRUE)
+
+# make df--
+dsp <- as.data.frame(dsp)
+#tsp <- droplevels(tsp)
+#tsp2 <- droplevels(tsp2)
+str(dsp) # 4846
+str(dsp2) # 4846
+# remove duplicated row
+#dsp2$point.ID[duplicated(dsp2$point.ID)]
+#dsp2 <- dsp2[-1034,]
+# join with rest
+dtv <- cbind(dsp, dsp2)
+str(dtv)
+names(dtv)
+# remove unnecessary columns --
+dtv <- dtv[,c(1,33,35,36,40,43,61,62,63,64,65)]
+head(dtv)
+dtv$unk.strap.like <- dtv$Seagrasses.Strap.Lik.Leaves-
+  (dtv$Seagrasses.Strap.Lik.Leaves.Amphiboli.sp.+dtv$Seagrasses.Strap.Lik.Leaves.Posidoni.sp.+
+     dtv$ Seagrasses.Strap.Lik.Leaves.Rupi.sp..epiphytes.algae)
+head(dtv)
+levels(dtv$ZoneName)[levels(dtv$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "Special Purpose Zone"
+head(dtv)
+
+
+# get averages ----
+# se function --
+se <- function(x) sd(x)/sqrt(length(x))
+# amphibolis --
+amp <- aggregate(Amphibolis~ZoneName, data = ftv, mean)
+ampse <- aggregate(Amphibolis~ZoneName, data = ftv, se)
+# posidonia --
+pos <- aggregate(Posidonia~ZoneName, data = ftv, mean)
+pose <- aggregate(Posidonia~ZoneName, data = ftv, se)
+# Zostera --
+th <- aggregate(Thalassodendrum~ZoneName, data = ftv, mean)
+thse <- aggregate(Thalassodendrum~ZoneName, data = ftv, se)
+# unknown strap --
+unk <- aggregate(unk.strap.like~ZoneName, data = ftv, mean)
+unkse <- aggregate(unk.strap.like~ZoneName, data = ftv, se)
+
+# join -- 
+tsg <- cbind(amp, pos, th,  unk)
+head(tsg )
+names(tsg )
+tsg  <- tsg [,c(1,2,4,6,8)]
+head(tsg )
+
+tsg1 <- cbind(ampse, pose, thse,  unkse)
+head(tsg1)
+names(tsg1)
+tsg1 <- tsg1[,c(1,2,4,6,8)]
+head(tsg1)
+names(tsg1) <- c("ZoneName",  "AmphibolisSE","PosidoniaSE",  "ThalassoSE" ,    "unk.strap.like.SE")
+
+# make long ---
+tsg <- melt(tsg, od.vars=c("ZoneName"))
+head(tsg)
+names(tsg) <- c("ZoneName", "Seagrass", "Mean")
+
+tsg1 <- melt(tsg1, od.vars=c("ZoneName"))
+head(tsg1)
+names(tsg1) <- c("ZoneName", "Seagrass", "SE")
+
+tsg2 <- cbind(tsg, tsg1)
+head(tsg2)
+tsg2 <- tsg2[,c(1,2,3,6)]
+head(tsg2)
+str(tsg2)
+# rename factors ----
+levels(tsg2$Seagrass)[levels(tsg2$Seagrass)=="unk.strap.like"] <- "Unidentified strap-like"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="National Park Zone"] <- "NPZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Habitat Protection Zone"] <- "HPZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Multiple Use Zone"] <- "MUZ"
+levels(tsg2$ZoneName)[levels(tsg2$ZoneName)=="Special Purpose Zone"] <- "SPZ"
+
+# reorder factors for plotting ----
+tsg2$ZoneName <- ordered(tsg2$ZoneName, levels=c("NPZ", "HPZ", "MUZ", "SPZ"))
+
+# plot FTV seagrass ----
+
+# FTV colors ----
+bluepal <- choose_palette()
+greenpal <- choose_palette()
+zonecolors <- c("#93dfb8" , "#eceabe", "#80daeb", "#dbd7d2")
+
+
+theme_set(theme_bw())
+pf <-ggplot(data=bsg2, aes(x=ZoneName, y=Mean, fill=ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = Mean-SE, ymax = Mean+SE), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_wrap(~Seagrass, ncol = 2, scales = 'free') +
+  #scale_fill_manual(values = c("#77dde7", "#fc6c85","#b2ec5d", "#ffcf48")) +
+  #scale_fill_manual(values = greenpal(4)) +
+  scale_fill_manual(values = zonecolors) +
+  labs(title = "FTV", y = "Mean % cover") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_text(size = 14, face="bold"), 
+        axis.text.y = element_text(size = 14), 
+        axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 14, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 14, color = "black", face ="bold"))
+
+pf
+
+ggsave("Seagrass.FTV.png", plot = pf, path = p.dir, scale=1, dpi = 300)

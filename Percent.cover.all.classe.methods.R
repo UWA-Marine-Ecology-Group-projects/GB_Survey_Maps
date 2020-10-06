@@ -38,6 +38,9 @@ s.dir <- (paste(w.dir, "shapefiles", sep='/'))
 p.dir <- paste(w.dir, "plots", sep='/')
 
 
+## Read GB shapefile ----
+gb <- readOGR(paste(s.dir, "GeoBay.shp", sep='/'))
+
 ###  BRUV PLOT ----
 
 ## read BRUV data ----
@@ -241,7 +244,7 @@ d$Class <- ordered(d$Class, levels = c("total.seagrass", "Unconsolidated", "Turf
                                          "Consolidated", "total.sponges", "corals", "other.inverts"))
 
 
-# AUV plot ----
+# DTV plot ----
 theme_set(theme_bw())
 pd <-ggplot(data=d, aes(x=Class, y=measurement, fill=Class)) +
   geom_bar(stat="identity", color = "black") +
@@ -267,11 +270,15 @@ pd
 d # dtv
 d$Method <- "DTV"
 names(d) <- c("Class", "ZoneName"    ,    "measurement", "se" , "Method")
+head(d)
 au # auv
 au$Method <- "AUV"
+head(au)
 f # ftv
+f <- f[,c(1:4)]
+head(f)
 f$Method <- "FTV"
-levels(f$ZoneName)[levels(f$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "Special Purpose Zone"
+#levels(f$ZoneName)[levels(f$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "Special Purpose Zone"
 b # bruvs
 head(b)
 b <- b[,c(1:4)]
@@ -371,5 +378,5 @@ pall2
 
 ## save ----
 #ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
-ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, scale=1, dpi = 300)
+#ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, scale=1, dpi = 300)
 

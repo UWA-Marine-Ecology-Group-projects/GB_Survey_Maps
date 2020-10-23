@@ -91,7 +91,7 @@ b2 <- projectRaster(b, crs = crs1)
 # https://geocompr.robinlovelace.net/adv-map.html
 
 map <- tm_shape(gb)  + tm_borders(col ='black', lwd = 2) +
-  tm_compass(type = "arrow", position = c(0.9, 0.59), size = 4) +
+  tm_compass(type = "arrow", position = c(0.8, 0.2), size = 4) +
   tm_scale_bar(breaks = c(0, 5, 10), text.size = 1) + 
   #tm_graticules(ticks = FALSE) +
   tm_grid(n.x = 3, n.y = 3, labels.size = 1.5, lines = FALSE) 
@@ -222,4 +222,33 @@ map1
 
 tmap_save(map1, paste(p.dir, "GB-coarse-bathy_CMR.tiff", sep='/'))
 
+###
 
+### Plot of GB Zones ----
+
+levels(gb$ZoneName)
+
+# rename zones ---
+levels(gb$ZoneName)[levels(gb$ZoneName)=="National Park Zone"] <- "NPZ"
+levels(gb$ZoneName)[levels(gb$ZoneName)=="Habitat Protection Zone"] <- "HPZ"
+levels(gb$ZoneName)[levels(gb$ZoneName)=="Multiple Use Zone"] <- "MUZ"
+levels(gb$ZoneName)[levels(gb$ZoneName)=="Special Purpose Zone (Mining Exclusion)"] <- "SPZ"
+
+levels(gb$ZoneName)
+
+
+map <- tm_shape(gb)  + tm_borders(col ='black', lwd = 2) +
+  tm_polygons("ZoneName", palette = c("#eceabe", "#80daeb", "#93dfb8" , "#dbd7d2")) +
+  tm_compass(type = "arrow", position = c(0.88, 0.54), size = 4) +
+  tm_scale_bar(breaks = c(0, 5, 10), text.size = 1, position = c(0.7, 0.01)) + 
+  #tm_graticules(ticks = FALSE) +
+  tm_grid(n.x = 3, n.y = 3, labels.size = 1.5, lines = FALSE) +
+  tm_layout(legend.text.size = 1,
+          legend.position = c(0.82, 0.15),
+          legend.title.color = 'white')
+map
+
+## save map ----
+
+tmap_save(map, paste(p.dir, "GB-Zones_CMR.tiff", sep='/'))
+tmap_save(map, paste(p.dir, "GB-Zones_CMR.png", sep='/'))

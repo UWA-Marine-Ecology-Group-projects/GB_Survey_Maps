@@ -189,7 +189,8 @@ pd <-ggplot(data=dfmxn, aes(order, maxn), y=maxn) +
 pd
 
 
-ggsave("GB-top10-fish.png", plot = pd, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+#ggsave("GB-top10-fish.png", plot = pd, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+ggsave("GB-top10-fish.png", plot = pd, path = p.dir, scale=1, dpi = 300)
 
 
 

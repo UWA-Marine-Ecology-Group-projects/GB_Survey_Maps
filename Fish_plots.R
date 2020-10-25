@@ -447,9 +447,9 @@ fall$class <- ordered(fall$class, levels = c("Species richness", "Legal sized fi
 levels(fall$class)
 
 # renames classes 
-fall$class <- revalue(fall$class, c("Species richness"="Species richness", "Legal sized fish"="Legal sized fish",
-                                    "King wrasse"="King wrasse", "Pink snapper"="Pink snapper",  
-                                    "Biomass.20cm"="Biomass of fish > 20 cm", "Biomass.30cm"="Biomass of fish > 30 cm"))
+#fall$class <- revalue(fall$class, c("Species richness"="Species richness", "Legal sized fish"="Legal sized fish",
+ #                                   "King wrasse"="King wrasse", "Pink snapper"="Pink snapper",  
+  #                                  "Biomass.20cm"="Biomass of fish > 20 cm", "Biomass.30cm"="Biomass of fish > 30 cm"))
                          
                          
 head(fall)
@@ -462,7 +462,10 @@ pd <-ggplot(data=fall, aes(x = ZoneName, y=value, fill = ZoneName)) +
   geom_bar(stat="identity", color = "black") +
   geom_errorbar(aes(ymin = value-se, ymax = value+se), width = 0.2, cex = 1) +
   #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
-  facet_wrap(~class, ncol = 2, scales = 'free') +
+  facet_wrap(~class, ncol = 2, scales = 'free', strip.position = "left",
+             labeller = as_labeller(c("Species richness"="Species richness", "Legal sized fish"="Abundance legal sized fish",
+                                       "King wrasse"="Abundance King wrasse", "Pink snapper"="Abundance Pink snapper",  
+                                       "Biomass.20cm"="Biomass of fish > 20 cm", "Biomass.30cm"="Biomass of fish > 30 cm"))) +
   scale_fill_manual(values = c("#93dfb8" ,"#eceabe", "#80daeb",  "#dbd7d2")) +
   #scale_fill_manual(values = greenpal(4)) +
   #scale_fill_manual(values = zonecolors) +
@@ -472,9 +475,9 @@ pd <-ggplot(data=fall, aes(x = ZoneName, y=value, fill = ZoneName)) +
         axis.text.y = element_text(size = 12), 
         axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
         title = element_text(size = 14, face= "bold"),
-        strip.background = element_rect(color = 'black', fill = "white"),
+        strip.background = element_blank(), strip.placement = 'outside',
         strip.text.x = element_text(size = 14, color = "black", face ="bold"),
-        strip.text.y = element_text(size = 14, color = "black", face ="bold")) 
+        strip.text.y = element_text(size = 10, color = "black", face ="bold")) 
 
 
 pd

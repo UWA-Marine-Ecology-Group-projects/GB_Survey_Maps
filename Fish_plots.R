@@ -63,6 +63,7 @@ class(mxn)
 md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
 head(md)
 str(md)
+summary(md)
 # keep only wanted cols --
 md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
 str(md)
@@ -71,6 +72,7 @@ class(md)
 # merge fish data with zone name ----
 f <- merge(mxn, md, by='sample', all.x = FALSE)
 str(f)
+summary(f)
 
 ## aggregate by zone ----
 # mean ----

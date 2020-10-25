@@ -193,8 +193,294 @@ ggsave("GB-top10-fish.png", plot = pd, path = p.dir, width = 200, height = 134, 
 
 
 
+## King wrasse ----
+# read fish data --
+d <- read.csv(paste(d.dir, "2014-12_Geographe.Bay_stereoBRUVs.king.wrasse.maxn.csv", sep='/'))
+head(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='sample', all.x = FALSE)
+str(f)
+
+## get means and se ----
+fmean <- aggregate(maxn ~ZoneName, data = f, mean)
+
+fse <- aggregate(maxn ~ZoneName, data = f, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'King wrasse'
+head(f2)
+kw <- f2
+head(kw)
+
+######################
+
+## Pink snapper ----
+# read fish data --
+d <- read.csv(paste(d.dir, "2014-12_Geographe.Bay_stereoBRUVs.pink.snapper.maxn.csv", sep='/'))
+head(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='sample', all.x = FALSE)
+str(f)
+
+## get means and se ----
+fmean <- aggregate(maxn ~ZoneName, data = f, mean)
+
+fse <- aggregate(maxn ~ZoneName, data = f, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'Pink snapper'
+head(f2)
+ps <- f2
+head(ps)
 
 
+######################
+
+## Species richness ----
+# read fish data --
+d <- read.csv(paste(d.dir, "GB_fish_cluster.csv", sep='/'))
+head(d)
+str(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+names(md) <- c("Sample"   , "ZoneName","coords.x1" ,"coords.x2")
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='Sample', all.x = FALSE)
+str(f)
+
+# species counts to species richness --
+
+fz <- f %>%
+  dplyr::mutate(Richness = apply(.[3:160] > 0, 1, sum)) %>%
+  dplyr::select(Sample, ZoneName, Richness)
+
+head(fz)
+str(fz)
+
+
+## get means and se ----
+fmean <- aggregate(Richness ~ZoneName, data = fz, mean)
+
+fse <- aggregate(Richness ~ZoneName, data = fz, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'Species richness'
+head(f2)
+sr <- f2
+head(sr)
+
+
+######################
+
+## Legal sized fish  ----
+# read fish data --
+d <- read.csv(paste(d.dir, "2014-12_Geographe.Bay_stereoBRUVs.legal.sized.fish.csv", sep='/'))
+head(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='sample', all.x = FALSE)
+str(f)
+head(f)
+
+# remove non legal --
+f <- f[f$legal!="non-legal",]
+f <- droplevels(f)
+str(f)
+
+## get means and se ----
+fmean <- aggregate(number ~ZoneName, data = f, mean)
+
+fse <- aggregate(number ~ZoneName, data = f, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'Legal sized fish'
+head(f2)
+ls <- f2
+head(ls)
+
+
+######################
+
+## Biomass > 20 cm  ----
+# read fish data --
+d <- read.csv(paste(d.dir, "2014-12_Geographe.Bay_stereoBRUVs.mass.summaries.csv", sep='/'))
+head(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='sample', all.x = FALSE)
+str(f)
+
+## get means and se ----
+fmean <- aggregate(mass.20cm ~ZoneName, data = f, mean)
+
+fse <- aggregate(mass.20cm ~ZoneName, data = f, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'Biomass.20cm'
+head(f2)
+b20 <- f2
+head(b20)
+
+
+######################
+
+## Biomass > 30 cm  ----
+# read fish data --
+d <- read.csv(paste(d.dir, "2014-12_Geographe.Bay_stereoBRUVs.mass.summaries.csv", sep='/'))
+head(d)
+
+# read metadata ---
+md <- read.csv(paste(d.dir, "BRUVs_2014_CMR.csv", sep='/'))
+head(md)
+str(md)
+# keep only wanted cols --
+md <- md %>% dplyr::select(sample, ZoneName, coords.x1, coords.x2)
+str(md)
+class(md)
+
+# merge fish data with zone name ----
+f <- merge(d, md, by='sample', all.x = FALSE)
+str(f)
+
+## get means and se ----
+fmean <- aggregate(mass.30cm ~ZoneName, data = f, mean)
+
+fse <- aggregate(mass.30cm ~ZoneName, data = f, se)
+
+f2 <- cbind(fmean, se = fse[,2])
+head(f2)
+
+f2$class <- 'Biomass.30cm'
+head(f2)
+b30 <- f2
+head(b30)
+
+
+
+## JOIN ALL FISH METRICS ----
+names(kw)  <- c("ZoneName", "value" ,    "se"   ,    "class" )
+names(ps) <- c("ZoneName", "value" ,    "se"   ,    "class" )
+names(sr) <- c("ZoneName", "value" ,    "se"   ,    "class" )
+names(ls) <- c("ZoneName", "value" ,    "se"   ,    "class" )
+names(b20) <- c("ZoneName", "value" ,    "se"   ,    "class" )
+names(b30) <- c("ZoneName", "value" ,    "se"   ,    "class" )
+
+fall <- rbind(kw, ps, sr, ls, b20, b30)
+str(fall)
+fall$class <- as.factor(fall$class)
+levels(fall$ZoneName)
+
+
+# rename zones
+library(plyr)
+fall$ZoneName <- revalue(fall$ZoneName, c("Habitat Protection Zone"="HPZ", "Multiple Use Zone"="MUZ", 
+                                            "National Park Zone"= "NPZ", "Special Purpose Zone (Mining Exclusion)" = "SPZ"))
+
+
+levels(fall$ZoneName)
+
+# reorder the levels of zone
+fall$ZoneName <- ordered(fall$ZoneName, levels = c("NPZ", "HPZ", "MUZ", "SPZ"))
+levels(fall$ZoneName)
+
+# reorder class levels
+levels(fall$class)
+fall$class <- ordered(fall$class, levels = c("Species richness", "Legal sized fish", "King wrasse" , "Pink snapper",
+                                                "Biomass.20cm", "Biomass.30cm"))
+levels(fall$class)
+
+# renames classes 
+fall$class <- revalue(fall$class, c("Species richness"="Species richness", "Legal sized fish"="Legal sized fish",
+                                    "King wrasse"="King wrasse", "Pink snapper"="Pink snapper",  
+                                    "Biomass.20cm"="Biomass of fish > 20 cm", "Biomass.30cm"="Biomass of fish > 30 cm"))
+                         
+                         
+head(fall)
+
+
+## PLOT ####
+theme_set(theme_bw())
+
+pd <-ggplot(data=fall, aes(x = ZoneName, y=value, fill = ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = value-se, ymax = value+se), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_wrap(~class, ncol = 2, scales = 'free') +
+  scale_fill_manual(values = c("#93dfb8" ,"#eceabe", "#80daeb",  "#dbd7d2")) +
+  #scale_fill_manual(values = greenpal(4)) +
+  #scale_fill_manual(values = zonecolors) +
+  #labs(x = "Zone") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12), 
+        axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(color = 'black', fill = "white"),
+        strip.text.x = element_text(size = 14, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 14, color = "black", face ="bold")) 
+
+
+pd
+
+
+#ggsave("GB-fish-metrics.png", plot = pd, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+ggsave("GB-fish-metrics.png", plot = pd, path = p.dir, scale = 1 , dpi = 300)
 
 
 

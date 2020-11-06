@@ -65,43 +65,75 @@ levels(gb$ZoneName)
 # get poly for each zone --
 NPZ <- gb[gb$ZoneName=="National Park Zone",]
 HPZ <- gb[gb$ZoneName=="Habitat Protection Zone",]
-MUZ <- gb[gb$ZoneName=="Multiple Use Zones",]
+MUZ <- gb[gb$ZoneName=="Multiple Use Zone",]
 SPZ <- gb[gb$ZoneName=="Special Purpose Zone (Mining Exclusion)",]
 
-# Pick colors ----
-sg <- brocolors("crayons")["Fern"] # "#78dbe2"
-alg <-  brocolors("crayons")["Raw Umber"] # "#1dacd6" 
-sand <-  brocolors("crayons")["Unmellow Yellow"] # "#f75394"
+# read state zones ----
+# G:\.shortcut-targets-by-id\1AEL4IR5ZcsB8ti7pHV51StFNn8G_492P\meg-gis\Matt's National No-take Marine Reserves (DRAFT)
+#state <- readOGR("G:/.shortcut-targets-by-id/1AEL4IR5ZcsB8ti7pHV51StFNn8G_492P/meg-gis/Matt's National No-take Marine Reserves (DRAFT)/All_StateReserves.shp")
 
-pal1 <- c(sand, sg, alg )
+state <- readOGR(paste(s.dir, "state_parks.shp",sep='/'))
+plot(state)
+
+
+# read ngari capes ----
+
+nc <- readOGR(paste(s.dir, "ngari-capes-GBsection.shp",sep='/'))
+plot(nc)
 
 
 
-### MBES data ----
+# read coastline ----
+# G:\.shortcut-targets-by-id\1AEL4IR5ZcsB8ti7pHV51StFNn8G_492P\meg-gis\Matt's National No-take Marine Reserves (DRAFT)
+#state <- readOGR("G:/.shortcut-targets-by-id/1AEL4IR5ZcsB8ti7pHV51StFNn8G_492P/meg-gis/Matt's National No-take Marine Reserves (DRAFT)/All_StateReserves.shp")
 
-# Read data ----
-b <- raster(paste(r.dir, "multibeamGB_UTM.tif", sep='/'))
-plot(b)
-proj4string(b)
-b2 <- projectRaster(b, crs = crs1)
+coast <- readOGR(paste(s.dir, "GB_coastline.shp",sep='/'))
+plot(coast)
 
+plot(gb, add=T)
+plot(state, add=T)
+
+# Colors 
+canary <- brocolors("crayons")["Canary"] # "#ffff99"
+mc <- brocolors("crayons")["Melon"] # "#ffbd88"
+rs <- brocolors("crayons")["Desert Sand"] # "#ffbd88"
 
 
 ## Plot using tmap ----
 # https://geocompr.robinlovelace.net/adv-map.html
 
-map <- tm_shape(gb)  + tm_borders(col ='black', lwd = 2) +
+map <- tm_shape(coast)  + tm_borders(col ='black', lwd = 2) + tm_fill(col = rs) +
   tm_compass(type = "arrow", position = c(0.8, 0.2), size = 4) +
   tm_scale_bar(breaks = c(0, 5, 10), text.size = 1) + 
   #tm_graticules(ticks = FALSE) +
   tm_grid(n.x = 3, n.y = 3, labels.size = 1.5, lines = FALSE) 
 map
 
-map1 <- map + tm_shape(b2) + tm_raster(palette=viridis(40, direction =-1), style = 'cont', legend.reverse = TRUE) +
-  tm_layout(legend.text.size = 1.7,
-            legend.position = c(0.85, 0.15),
-            legend.title.color = 'white') + map
+map1 <- map + tm_shape(MUZ) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#80daeb")
+
 map1
+
+map2 <- map1 + tm_shape(SPZ) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#dbd7d2")
+
+map2
+
+map3 <- map2 + tm_shape(HPZ) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#eceabe")
+
+map3
+
+map4 <- map3 + tm_shape(NPZ) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#93dfb8")
+
+map4
+
+map5 <- map4 + tm_shape(nc) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#fdbcb4")
+
+map5
+
+map6 <- map5 + tm_shape(state) + tm_borders(col ='black', lwd = 2) + tm_fill(col = "#ffff99")
+
+map6
+
+tmap_save(map6, paste(p.dir, "GB-CMR and state-zones-map.tiff", sep='/'))
 
 
 ## save map ----

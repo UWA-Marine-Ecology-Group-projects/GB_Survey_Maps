@@ -327,6 +327,9 @@ all$Method <- ordered(all$Method, levels = c("Stereo-BRUVs",  "AUV" , "FTV", "DT
 
 ## color plot ---
 allpal <- c("#93dfb8" ,"#eceabe", "#80daeb",  "#dbd7d2")
+# colors ----
+bluepal <- choose_palette()
+greenpal <- choose_palette()
 
 ## plot all ----
 
@@ -380,3 +383,81 @@ pall2
 #ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
 #ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, scale=1, dpi = 300)
 
+
+
+####
+
+## Separate plot ---
+str(all)
+levels(all$Class) # "Seagrasses"     "Unconsolidated" "Turf algae"     "Macroalgae"     "Consolidated"   "Sponges"        "Stony corals"  
+
+
+## plot main classes ----
+all2 <- all[all$Class !="Macroalgae",]
+all2 <- all2[all2$Class !="Consolidated",]
+all2 <- all2[all2$Class !="Sponges" ,]
+all2 <- all2[all2$Class !="Stony corals" ,]
+all2 <- droplevels(all2)
+levels(all2$Class)
+
+
+theme_set(theme_bw())
+pall2 <-ggplot(data=all2, aes(x=Method, y=measurement, fill=ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = measurement-se, ymax = measurement+se), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_grid(ZoneName~Class) +
+  #facet_wrap(~Zone, ncol = 2, scales = 'free') +
+  #scale_fill_manual(values = c("#77dde7", "#fc6c85","#b2ec5d", "#ffcf48")) +
+  scale_fill_manual(values = greenpal(7)) +
+  #labs(title = "Autonomous Underwater Vehicle", y = "Mean % cover") +
+  labs(y = "Mean % cover") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_text(size = 12, face="bold"), 
+        axis.text.y = element_text(size = 12), 
+        axis.text.x = element_text(size=10, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 8, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 10, color = "black", face ="bold"))
+
+pall2
+
+## save ----
+ggsave("Cover.Method.MainClass.png", plot = pall2, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+#ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, scale=1, dpi = 300)
+
+## plot less dom classes ----
+levels(all$Class)
+all3 <- all[all$Class !="Seagrasses",]
+all3 <- all3[all3$Class !="Unconsolidated",]
+all3 <- all3[all3$Class !="Turf algae" ,]
+all3 <- droplevels(all3)
+levels(all3$Class)
+
+
+theme_set(theme_bw())
+pall2 <-ggplot(data=all3, aes(x=Method, y=measurement, fill=ZoneName)) +
+  geom_bar(stat="identity", color = "black") +
+  geom_errorbar(aes(ymin = measurement-se, ymax = measurement+se), width = 0.2, cex = 1) +
+  #geom_errorbar(aes(ymax = mean-sd, ymin = mean+sd), width = 0.2, color = "blue") +
+  facet_grid(ZoneName~Class) +
+  #facet_wrap(~Zone, ncol = 2, scales = 'free') +
+  #scale_fill_manual(values = c("#77dde7", "#fc6c85","#b2ec5d", "#ffcf48")) +
+  scale_fill_manual(values = greenpal(7)) +
+  #labs(title = "Autonomous Underwater Vehicle", y = "Mean % cover") +
+  labs(y = "Mean % cover") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
+        axis.title.x = element_blank(), axis.title.y = element_text(size = 12, face="bold"), 
+        axis.text.y = element_text(size = 12), 
+        axis.text.x = element_text(size=10, face="bold", color = "grey20", angle = 45, hjust = 1),
+        title = element_text(size = 14, face= "bold"),
+        strip.background = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 8, color = "black", face ="bold"),
+        strip.text.y = element_text(size = 10, color = "black", face ="bold"))
+
+pall2
+
+## save ----
+ggsave("Cover.Method.LessClass.png", plot = pall2, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+#ggsave("Cover.Method.Class.Zone.png", plot = pall2, path = p.dir, scale=1, dpi = 300)

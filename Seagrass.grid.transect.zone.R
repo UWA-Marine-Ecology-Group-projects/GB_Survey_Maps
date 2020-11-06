@@ -557,7 +557,7 @@ pd <-ggplot(data=dsg2, aes(x=ZoneName, y=Mean, fill=ZoneName)) +
 
 pd
 
-ggsave("Seagrass.DTV.png", plot = pd, path = p.dir, scale=1, dpi = 300)
+#ggsave("Seagrass.DTV.png", plot = pd, path = p.dir, scale=1, dpi = 300)
 
 
 ### All methods  -----

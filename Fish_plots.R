@@ -180,7 +180,7 @@ pd <-ggplot(data=dfmxn, aes(order, maxn), y=maxn) +
   ) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none",
         axis.title.x = element_text(size = 14, face="bold"), axis.title.y = element_text(size = 14, face="bold"), 
-        axis.text.y = element_text(size = 10), 
+        axis.text.y = element_text(size = 10, face="italic"), 
         axis.text.x = element_text(size=14, face="bold", color = "grey20", angle = 45, hjust = 1),
         title = element_text(size = 14, face= "bold"),
         strip.background = element_rect(color = 'black', fill = "white"),
@@ -192,8 +192,9 @@ pd
 
 
 #ggsave("GB-top10-fish.png", plot = pd, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
-ggsave("GB-top10-fish.png", plot = pd, path = p.dir, scale=1, dpi = 300)
-
+#ggsave("GB-top10-fish.png", plot = pd, path = p.dir, scale=1, dpi = 300)
+#x.dir <- "G:/My Drive/Anita/Parks_Geo_SW/GB_PLOTS"
+#ggsave("GB-top10-fish2.png", plot = pd, path = x.dir, width = 200, height = 200, units = "mm", dpi = 300)
 
 
 ## King wrasse ----

@@ -191,5 +191,5 @@ p0 <- ggplot() +
 
 p0
 
-ggsave("GB-All-surveys.png", plot = p0, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
+#ggsave("GB-All-surveys.png", plot = p0, path = p.dir, width = 200, height = 134, units = "mm", dpi = 300)
 
